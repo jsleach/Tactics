@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
-
+/*
+ * Class for maintaining and manipulating hex/cube based coordinates
+ */
 [System.Serializable]
 public struct HexCoordinates {
 
@@ -24,15 +26,18 @@ public struct HexCoordinates {
 		}
 	}
 
+	// constructor
 	public HexCoordinates (int x, int z) {
 		this.x = x;
 		this.z = z;
 	}
 
+	// convert to hex/cube coords from offset/square coords
 	public static HexCoordinates FromOffsetCoordinates (int x, int z) {
 		return new HexCoordinates(x - z / 2, z);
 	}
 
+	// convert from a position in 3d space to a set of hex/cube coords
 	public static HexCoordinates FromPosition (Vector3 position) {
 		float x = position.x / (HexMetrics.innerRadius * 2f);
 		float y = -x;
@@ -61,11 +66,13 @@ public struct HexCoordinates {
 		return new HexCoordinates(iX, iZ);
 	}
 
+	// output coords on one line
 	public override string ToString () {
 		return "(" +
 			X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ")";
 	}
 
+	// output coords on multiple lines
 	public string ToStringOnSeparateLines () {
 		return X.ToString() + "\n" + Y.ToString() + "\n" + Z.ToString();
 	}

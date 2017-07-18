@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+/*
+ * Class for generating and maintaining the hexagon based grid
+ */
 public class HexGrid : MonoBehaviour {
 
 	public int width = 6;
@@ -33,15 +36,25 @@ public class HexGrid : MonoBehaviour {
 		hexMesh.Triangulate(cells);
 	}
 
-	public void ColorCell (Vector3 position, Color color) {
+	public void Refresh() {
+		hexMesh.Triangulate (cells);
+	}
+
+	// returns the cell from the clicked positiong
+	public HexCell CellFromPosition (Vector3 position) {
 		position = transform.InverseTransformPoint(position);
 		HexCoordinates coordinates = HexCoordinates.FromPosition(position);
 		int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;
-		HexCell cell = cells[index];
+		return cells[index];
+	}
+
+	// turns the cell at the given positing the given color
+	public void ColorCell (HexCell cell, Color color) {
 		cell.color = color;
 		hexMesh.Triangulate(cells);
 	}
 
+	// creates a cell at the given x/z coords, with index i
 	void CreateCell (int x, int z, int i) {
 		Vector3 position;
 		position.x = (x + z * 0.5f - z / 2) * (HexMetrics.innerRadius * 2f);
@@ -54,10 +67,29 @@ public class HexGrid : MonoBehaviour {
 		cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
 		cell.color = defaultColor;
 
+		// assign neighbors
+		if (x > 0) {
+			cell.SetNeighbor (HexDirection.W, cells [i - 1]);
+		}
+		if (z > 0) {
+			if ((z & 1) == 0) {
+				cell.SetNeighbor (HexDirection.SE, cells [i - width]);
+				if (x > 0) {
+					cell.SetNeighbor (HexDirection.SW, cells [i - width - 1]);
+				}
+			} else {
+				cell.SetNeighbor (HexDirection.SW, cells [i - width]);
+				if (x < width - 1) {
+					cell.SetNeighbor (HexDirection.SE, cells [i - width + 1]);
+				}
+
+			}
+		}
+
 		Text label = Instantiate<Text>(cellLabelPrefab);
 		label.rectTransform.SetParent(gridCanvas.transform, false);
-		label.rectTransform.anchoredPosition =
-			new Vector2(position.x, position.z);
+		label.rectTransform.anchoredPosition = new Vector2(position.x, position.z);
 		label.text = cell.coordinates.ToStringOnSeparateLines();
+		cell.uiRect = label.rectTransform;
 	}
 }
